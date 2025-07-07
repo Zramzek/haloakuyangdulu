@@ -27,7 +27,7 @@ interface FormData {
   pesan: string;
 }
 
-const HaiAkuYangDulu: React.FC = () => {
+const HaloAkuYangDulu: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -210,7 +210,7 @@ const HaiAkuYangDulu: React.FC = () => {
                 {post.is_anonymous ? "Anonymous" : post.name}
               </h3>
               <p className="text-sm text-gray-500">
-                {post.dari} → {post.untuk}
+                {post.dari} year old me → {post.untuk} year old me
               </p>
             </div>
           </div>
@@ -238,7 +238,7 @@ const HaiAkuYangDulu: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              HaiAkuYangDulu
+              HaloAkuYangDulu
             </h1>
             <div className="flex items-center space-x-4">
               {/* Search Bar */}
@@ -477,4 +477,4 @@ const HaiAkuYangDulu: React.FC = () => {
   );
 };
 
-export default HaiAkuYangDulu;
+export default HaloAkuYangDulu;
