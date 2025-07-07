@@ -210,7 +210,7 @@ const HaloAkuYangDulu: React.FC = () => {
                 {post.is_anonymous ? "Anonymous" : post.name}
               </h3>
               <p className="text-sm text-gray-500">
-                {post.dari} year old me → {post.untuk} year old me
+                {post.dari} y.o. me → {post.untuk} y.o. me
               </p>
             </div>
           </div>
@@ -403,8 +403,8 @@ const HaloAkuYangDulu: React.FC = () => {
                     Dari:
                   </label>
                   <input
-                    type="text"
-                    placeholder="contoh: 22 tahun"
+                    type="number"
+                    placeholder="contoh : 22"
                     value={formData.dari}
                     onChange={(e) =>
                       setFormData({ ...formData, dari: e.target.value })
@@ -419,8 +419,8 @@ const HaloAkuYangDulu: React.FC = () => {
                     Untuk:
                   </label>
                   <input
-                    type="text"
-                    placeholder="contoh: 16 tahun"
+                    type="number"
+                    placeholder="contoh: 16"
                     value={formData.untuk}
                     onChange={(e) =>
                       setFormData({ ...formData, untuk: e.target.value })
