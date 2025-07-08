@@ -1,16 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Heart,
-  Search,
-  Plus,
-  X,
-  User,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   fetchPosts,
   createPost,
@@ -18,6 +9,10 @@ import {
   searchPosts,
   Post,
 } from "@/lib/supabase";
+import Header from "@/components/header";
+import PostsContainer from "@/components/postcontainer";
+import Pagination from "@/components/pagination";
+import Modal from "@/components/modal";
 
 interface FormData {
   name: string;
@@ -97,7 +92,7 @@ const HaloAkuYangDulu: React.FC = () => {
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
+  }, [currentPage, searchQuery]);
 
   // Handle like toggle
   const handleLike = async (postId: number) => {
@@ -191,79 +186,13 @@ const HaloAkuYangDulu: React.FC = () => {
     }
   };
 
-  // Split posts into two rows for animation
-  const topRowPosts = posts.filter((_, index) => index % 2 === 0);
-  const bottomRowPosts = posts.filter((_, index) => index % 2 === 1);
-
-  const PostCard: React.FC<{ post: Post }> = ({ post }) => {
-    const isLiked = likedPosts.has(post.id);
-
-    return (
-      <div className="bg-white rounded-2xl shadow-lg p-6 min-w-80 mx-3 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-800">
-                {post.is_anonymous ? "Anonymous" : post.name}
-              </h3>
-              <p className="text-sm text-gray-500">
-                {post.dari} y.o. me → {post.untuk} y.o. me
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => handleLike(post.id)}
-            className={`flex items-center space-x-1 px-3 py-1 rounded-full transition-all duration-200 ${
-              isLiked
-                ? "bg-red-100 text-red-600 hover:bg-red-200"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`} />
-            <span className="text-sm font-medium">{post.likes}</span>
-          </button>
-        </div>
-        <p className="text-gray-700 leading-relaxed">{post.pesan}</p>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-indigo-50">
-      {/* Header */}
-      <div className="relative z-10 bg-white/80 backdrop-blur-lg border-b border-purple-100">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              HaloAkuYangDulu
-            </h1>
-            <div className="flex items-center space-x-4">
-              {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Cari berdasarkan nama atau pesan..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-80 bg-white border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              {/* Add Button */}
-              <button
-                onClick={() => setShowModal(true)}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Tambah</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        setShowModal={setShowModal}
+      />
 
       {/* Loading State */}
       {loading ? (
@@ -281,197 +210,32 @@ const HaloAkuYangDulu: React.FC = () => {
             </p>
           </div>
 
-          {/* Animated Posts Container */}
-          <div className="overflow-hidden py-8">
-            {/* Top Row - Moving Left */}
-            <div className="mb-8">
-              <div className="flex animate-scroll-left">
-                {/* Duplicate posts for seamless loop */}
-                {[...topRowPosts, ...topRowPosts].map((post, index) => (
-                  <PostCard key={`top-${post.id}-${index}`} post={post} />
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom Row - Moving Right */}
-            <div>
-              <div className="flex animate-scroll-right">
-                {/* Duplicate posts for seamless loop */}
-                {[...bottomRowPosts, ...bottomRowPosts].map((post, index) => (
-                  <PostCard key={`bottom-${post.id}-${index}`} post={post} />
-                ))}
-              </div>
-            </div>
-          </div>
+          <PostsContainer
+            posts={posts}
+            likedPosts={likedPosts}
+            onLike={handleLike}
+          />
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center space-x-2 py-8">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-
-              {[...Array(Math.min(5, totalPages))].map((_, index) => {
-                const pageNum =
-                  Math.max(1, Math.min(totalPages - 4, currentPage - 2)) +
-                  index;
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-4 py-2 rounded-lg ${
-                      currentPage === pageNum
-                        ? "bg-purple-600 text-white"
-                        : "bg-white border border-purple-200 text-purple-600 hover:bg-purple-50"
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="p-2 rounded-lg bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           )}
         </>
       )}
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Tambah Surat Baru
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                disabled={submitting}
-                className="text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama:
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  required
-                  disabled={submitting}
-                />
-                <div className="mt-2">
-                  <label className="flex items-center space-x-2 text-sm text-gray-600">
-                    <input
-                      type="checkbox"
-                      checked={formData.anonymous}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          anonymous: e.target.checked,
-                        })
-                      }
-                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                      disabled={submitting}
-                    />
-                    <span>Anonymous</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Dari:
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="contoh : 22"
-                    value={formData.dari}
-                    onChange={(e) =>
-                      setFormData({ ...formData, dari: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    required
-                    disabled={submitting}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Untuk:
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="contoh: 16"
-                    value={formData.untuk}
-                    onChange={(e) =>
-                      setFormData({ ...formData, untuk: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    required
-                    disabled={submitting}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pesan:
-                </label>
-                <textarea
-                  value={formData.pesan}
-                  onChange={(e) =>
-                    setFormData({ ...formData, pesan: e.target.value })
-                  }
-                  rows={6}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-                  placeholder="Tulis pesanmu untuk diri masa lalu..."
-                  required
-                  disabled={submitting}
-                />
-                <div className="text-right mt-1">
-                  <span className="text-sm text-gray-500">
-                    {formData.pesan.length}/500 karakter
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Mengirim...</span>
-                  </>
-                ) : (
-                  <span>KIRIM SURAT</span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={handleSubmit}
+          onClose={() => setShowModal(false)}
+          submitting={submitting}
+        />
       )}
     </div>
   );
